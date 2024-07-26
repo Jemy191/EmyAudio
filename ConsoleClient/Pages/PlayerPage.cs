@@ -3,7 +3,6 @@ using Core.Models;
 using Core.Services;
 using LibVLCSharp.Shared;
 using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace ConsoleClient.Pages;
 
@@ -14,6 +13,7 @@ public class PlayerPage : IPage
     readonly VlcService vlcService;
     readonly PageNavigationService pageNavigationService;
     readonly SettingsService settingsService;
+    readonly DownloadedAudioService downloadedAudioService;
 
     RuntimePlaylist? playlistInfo;
     AudioInfo? currentAudioInfo;
@@ -24,12 +24,17 @@ public class PlayerPage : IPage
     ProgressContext? audioProgressContext;
     Task? progressTask;
 
-    public PlayerPage(YoutubeStreamingService youtube, VlcService vlcService, PageNavigationService pageNavigationService, SettingsService settingsService)
+    public PlayerPage(YoutubeStreamingService youtube,
+                      VlcService vlcService,
+                      PageNavigationService pageNavigationService,
+                      SettingsService settingsService,
+                      DownloadedAudioService downloadedAudioService)
     {
         this.youtube = youtube;
         this.vlcService = vlcService;
         this.pageNavigationService = pageNavigationService;
         this.settingsService = settingsService;
+        this.downloadedAudioService = downloadedAudioService;
 
         vlcService.mediaPlayer.EndReached += OnAudioEnd;
         vlcService.mediaPlayer.PositionChanged += OnAudioPositionChanged;
@@ -40,7 +45,7 @@ public class PlayerPage : IPage
         playlistInfo = await pageNavigationService.Open<TagChoosingPage, RuntimePlaylist>();
 
         await TryChangeAudio();
-        
+
         if (await Control())
             return;
     }
@@ -48,7 +53,7 @@ public class PlayerPage : IPage
     async Task<bool> TryChangeAudio(bool canRestart = false)
     {
         await RefreshPlayerInfo(false);
-        
+
         if (currentAudioInfo == playlistInfo?.Current)
             return !canRestart;
 
@@ -57,13 +62,19 @@ public class PlayerPage : IPage
         if (currentAudioInfo is null)
             return false;
 
-        await AnsiConsole.Status()
-            .StartAsync("Loading audio stream...", async ctx =>
-            {
-                var audio = await youtube.GetAudioStream(currentAudioInfo.Id);
-                await vlcService.Play(audio);
-            });
+        var audioStream = downloadedAudioService.TryGetAudio(currentAudioInfo.Id);
 
+        if (audioStream is null)
+            await AnsiConsole.Status()
+                .StartAsync("Loading audio stream...", async _ =>
+                {
+                    audioStream = await youtube.GetAudioStream(currentAudioInfo.Id);
+                });
+
+        if (audioStream is null)
+            throw new NullReferenceException("Audio stream is null");
+        
+        await vlcService.Play(audioStream);
 
         return true;
     }
@@ -78,7 +89,7 @@ public class PlayerPage : IPage
         allProgressTasks.Clear();
         if (progressTask != null)
             await progressTask;
-        
+
         pageNavigationService.Refresh();
 
         AnsiConsole.MarkupLineInterpolated($"""
@@ -89,8 +100,8 @@ public class PlayerPage : IPage
                                             Index: {playlistInfo?.CurrentIndex.ToString() ?? "null"}
                                             Looping: {settingsService.Setting.Loop}
                                             """);
-        
-        if(drawAudioProgress)
+
+        if (drawAudioProgress)
         {
             progressTask = AnsiConsole.Progress()
                 .AutoClear(true)
@@ -101,10 +112,10 @@ public class PlayerPage : IPage
                     volumeProgress = context.AddTask("Volume:")
                         .Value(settingsService.Setting.Volume)
                         .MaxValue(100);
-                    
+
                     audioProgress = context.AddTask("Time:")
                         .MaxValue(1);
-                    
+
                     allProgressTasks.Add(volumeProgress);
                     allProgressTasks.Add(audioProgress);
 
@@ -124,9 +135,9 @@ public class PlayerPage : IPage
         {
             if (dirty)
                 await RefreshPlayerInfo();
-            
+
             dirty = false;
-            
+
             if (playlistInfo is null)
                 return true;
 
@@ -152,7 +163,7 @@ public class PlayerPage : IPage
                         playlistInfo.Previous();
 
                     var restart = !inFirst20Sec || !await TryChangeAudio(true);
-                    
+
                     if (restart)
                     {
                         vlcService.mediaPlayer.Stop();

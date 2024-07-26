@@ -8,11 +8,13 @@ public class YoutubeStreamingService
 {
     readonly YoutubeClient youtubeStream;
     readonly YouTubeService youtubeApi;
+    readonly DownloadedAudioService downloadedAudioService;
 
-    public YoutubeStreamingService(YoutubeClient youtubeStream, YouTubeService youtubeApi)
+    public YoutubeStreamingService(YoutubeClient youtubeStream, YouTubeService youtubeApi, DownloadedAudioService downloadedAudioService)
     {
         this.youtubeStream = youtubeStream;
         this.youtubeApi = youtubeApi;
+        this.downloadedAudioService = downloadedAudioService;
     }
     
     public async Task<Stream> GetAudioStream(string id)
@@ -25,7 +27,12 @@ public class YoutubeStreamingService
             .Where(s => s.Container == Container.Mp4)
             .GetWithHighestBitrate();
 
-        return await youtubeStream.Videos.Streams.GetAsync(streamInfo);
+        
+        var stream = await youtubeStream.Videos.Streams.GetAsync(streamInfo);
+
+        await downloadedAudioService.SaveAudio(stream, id);
+        
+        return stream;
     }
 
     public async Task<IEnumerable<(string Title, string Id)>> GetMyPlaylists()

@@ -13,9 +13,4 @@ public class AudioInfo
     public readonly List<string> Tags = [];
     public VideoId? Next { get; set; }
     public VideoId? Previous { get; set; }
-
-    public AudioInfo()
-    {
-        
-    }
 }

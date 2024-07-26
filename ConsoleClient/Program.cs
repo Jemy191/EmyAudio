@@ -1,5 +1,6 @@
 ﻿using ConsoleClient;
 using ConsoleClient.Pages;
+using Core.Models;
 using Core.Services;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
@@ -25,6 +26,7 @@ var services = new ServiceCollection()
     .AddTransient<YoutubeStreamingService>()
     .AddTransient<YoutubeClient>()
     .AddTransient<GoogleAuthService>()
+    .AddTransient<DownloadedAudioService>()
     .AddSingleton<PageNavigationService>()
     .AddSingleton<SettingsService>()
     .AddSingleton<VlcService>();
