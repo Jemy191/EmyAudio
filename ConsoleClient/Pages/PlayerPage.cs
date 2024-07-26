@@ -40,18 +40,9 @@ public class PlayerPage : IPage
         playlistInfo = await pageNavigationService.Open<TagChoosingPage, RuntimePlaylist>();
 
         await TryChangeAudio();
-
-        //await AnsiConsole.Progress()
-        //    .AutoRefresh(false)
-        //    .StartAsync(async context =>
-        //    {
-        //        audioProgressContext = context;
-        //        audioProgress = context.AddTask("Time:")
-        //            .MaxValue(1);
-//
+        
         if (await Control())
             return;
-        //      });
     }
 
     async Task<bool> TryChangeAudio(bool canRestart = false)
