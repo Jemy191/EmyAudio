@@ -1,7 +1,6 @@
 using Core;
 using Core.Models;
 using Core.Services;
-using LibVLCSharp.Shared;
 using Spectre.Console;
 
 namespace ConsoleClient.Pages;
@@ -9,74 +8,51 @@ namespace ConsoleClient.Pages;
 public class PlayerPage : IPage
 {
     public string Name => "Player";
-    readonly YoutubeStreamingService youtube;
-    readonly VlcService vlcService;
     readonly PageNavigationService pageNavigationService;
     readonly SettingsService settingsService;
-    readonly DownloadedAudioService downloadedAudioService;
-
-    RuntimePlaylist? playlistInfo;
-    AudioInfo? currentAudioInfo;
+    readonly PlayerService playerService;
 
     ProgressTask? audioProgress;
     ProgressTask? volumeProgress;
     readonly List<ProgressTask> allProgressTasks = [];
     ProgressContext? audioProgressContext;
     Task? progressTask;
+    AudioInfo? currentAudioInfo;
+    int currentIndex;
 
-    public PlayerPage(YoutubeStreamingService youtube,
-                      VlcService vlcService,
-                      PageNavigationService pageNavigationService,
+    public PlayerPage(PageNavigationService pageNavigationService,
                       SettingsService settingsService,
-                      DownloadedAudioService downloadedAudioService)
+                      PlayerService playerService)
     {
-        this.youtube = youtube;
-        this.vlcService = vlcService;
         this.pageNavigationService = pageNavigationService;
         this.settingsService = settingsService;
-        this.downloadedAudioService = downloadedAudioService;
-
-        vlcService.mediaPlayer.EndReached += OnAudioEnd;
-        vlcService.mediaPlayer.PositionChanged += OnAudioPositionChanged;
+        this.playerService = playerService;
     }
 
     public async Task Show()
     {
-        playlistInfo = await pageNavigationService.Open<TagChoosingPage, RuntimePlaylist>();
+        var playlistInfo = await pageNavigationService.Open<TagChoosingPage, RuntimePlaylist>();
 
-        await TryChangeAudio();
+        await StartPlayer(playlistInfo);
 
-        if (await Control())
-            return;
+        await Control();
+    }
+    async Task StartPlayer(RuntimePlaylist playlistInfo)
+    {
+        var playerCallback = new PlayerService.PlayerCallbacks
+        {
+            OnDownload = OnDownload,
+            OnAudioChanged = OnAudioChanged,
+            OnPositionChanged = OnPositionChanged
+        };
+
+        await playerService.Start(playlistInfo, playerCallback);
     }
 
-    async Task<bool> TryChangeAudio(bool canRestart = false)
+    async Task StopPlayer()
     {
+        playerService.Stop();
         await RefreshPlayerInfo(false);
-
-        if (currentAudioInfo == playlistInfo?.Current)
-            return !canRestart;
-
-        currentAudioInfo = playlistInfo?.Current;
-
-        if (currentAudioInfo is null)
-            return false;
-
-        var audioStream = downloadedAudioService.TryGetAudio(currentAudioInfo.Id);
-
-        if (audioStream is null)
-            await AnsiConsole.Status()
-                .StartAsync("Loading audio stream...", async _ =>
-                {
-                    audioStream = await youtube.GetAudioStream(currentAudioInfo.Id);
-                });
-
-        if (audioStream is null)
-            throw new NullReferenceException("Audio stream is null");
-        
-        await vlcService.Play(audioStream);
-
-        return true;
     }
 
     async Task RefreshPlayerInfo(bool drawAudioProgress = true)
@@ -90,14 +66,14 @@ public class PlayerPage : IPage
         if (progressTask != null)
             await progressTask;
 
-        pageNavigationService.Refresh();
+        pageNavigationService.RefreshShell();
 
         AnsiConsole.MarkupLineInterpolated($"""
                                             Now playing: {currentAudioInfo?.Name}
                                             Control:
                                             Space -> Toggle pause, M -> Menu, T -> Tag choosing, Escape -> Exit
                                             Left/Right arrow -> Change audio Up/Down arrow -> Volume
-                                            Index: {playlistInfo?.CurrentIndex.ToString() ?? "null"}
+                                            Index: {currentIndex}
                                             Looping: {settingsService.Setting.Loop}
                                             """);
 
@@ -126,9 +102,41 @@ public class PlayerPage : IPage
                 });
         }
     }
+    
+    async Task ChangeVolume(int newVolume)
+    {
+        var volume = await playerService.SetVolume(newVolume);
+        volumeProgress?.Value(volume);
+    }
 
-    /// <returns>Is exit requested</returns>
-    async Task<bool> Control()
+    void OnPositionChanged(float position)
+    {
+        if (audioProgress is null)
+            return;
+        audioProgress.Value = position;
+        
+        audioProgressContext?.Refresh();
+    }
+
+    async Task OnAudioChanged(AudioInfo audioInfo, int currentIndex)
+    {
+        currentAudioInfo = audioInfo;
+        this.currentIndex = currentIndex;
+        await RefreshPlayerInfo();
+    }
+
+    async Task OnDownload(Task downloadComplete)
+    {
+        await RefreshPlayerInfo(false);
+
+        await AnsiConsole.Status()
+            .StartAsync("Loading audio stream...", async _ =>
+            {
+                await downloadComplete;
+            });
+    }
+
+    async Task Control()
     {
         var dirty = true;
         while (true)
@@ -138,9 +146,6 @@ public class PlayerPage : IPage
 
             dirty = false;
 
-            if (playlistInfo is null)
-                return true;
-            
             var key = Console.ReadKey().Key;
 
             switch (key)
@@ -152,83 +157,33 @@ public class PlayerPage : IPage
                     await ChangeVolume(-5);
                     break;
                 case ConsoleKey.RightArrow:
-                    playlistInfo.Next(settingsService.Setting.Loop);
-
-                    await TryChangeAudio();
-                    dirty = true;
+                    await playerService.Next();
                     break;
                 case ConsoleKey.LeftArrow:
-                    var inFirst20Sec = vlcService.mediaPlayer.Time <= 20 * 1000;
-                    if (inFirst20Sec)
-                        playlistInfo.Previous();
-
-                    var restart = !inFirst20Sec || !await TryChangeAudio(true);
-
-                    if (restart)
-                    {
-                        vlcService.mediaPlayer.Stop();
-                        vlcService.mediaPlayer.Play();
-                    }
-                    dirty = true;
+                    await playerService.Previous();
                     break;
-
                 case ConsoleKey.L:
-                    settingsService.Setting.Loop = !settingsService.Setting.Loop;
-                    await settingsService.Save();
+                    await playerService.ToggleLooping();
                     dirty = true;
                     break;
-
                 case ConsoleKey.Spacebar:
-                    vlcService.mediaPlayer.Pause();
+                    playerService.TogglePause();
                     break;
                 case ConsoleKey.Escape:
+                    await StopPlayer();
                     AnsiConsole.Clear();
                     AnsiConsole.MarkupLine("Exiting");
-                    return true;
+                    pageNavigationService.RequestExit();
+                    return;
                 case ConsoleKey.T:
-                    vlcService.mediaPlayer.Stop();
-                    await RefreshPlayerInfo(false);
-                    playlistInfo = await pageNavigationService.Open<TagChoosingPage, RuntimePlaylist>();
-                    return false;
+                    await StopPlayer();
+                    var playlistInfo = await pageNavigationService.Open<TagChoosingPage, RuntimePlaylist>();
+                    await StartPlayer(playlistInfo);
+                    break;
                 case ConsoleKey.M:
-                    vlcService.mediaPlayer.Stop();
-                    await RefreshPlayerInfo(false);
-                    await pageNavigationService.Open<MenuPage>();
-                    return true;
+                    await StopPlayer();
+                    return;
             }
-        }
-    }
-    async Task ChangeVolume(int delta)
-    {
-        settingsService.Setting.Volume = Math.Clamp(settingsService.Setting.Volume + delta, 0, 100);
-        await settingsService.Save();
-        vlcService.mediaPlayer.Volume = settingsService.Setting.Volume;
-        volumeProgress?.Value(settingsService.Setting.Volume);
-    }
-
-    void OnAudioPositionChanged(object? sender, MediaPlayerPositionChangedEventArgs e)
-    {
-        if (audioProgress is null)
-            return;
-        audioProgress.Value = e.Position;
-
-
-        audioProgressContext?.Refresh();
-    }
-
-    async void OnAudioEnd(object? sender, EventArgs e)
-    {
-        try
-        {
-            playlistInfo?.Next(settingsService.Setting.Loop);
-            await TryChangeAudio();
-            await RefreshPlayerInfo();
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
-            await Task.Delay(TimeSpan.FromSeconds(30));
-            throw;
         }
     }
 }

@@ -26,34 +26,21 @@ try
         .AddSingleton(youtubeApi)
         .AddTransient<YoutubeStreamingService>()
         .AddTransient<YoutubeClient>()
+        .AddTransient<PlayerService>()
         .AddTransient<GoogleAuthService>()
         .AddTransient<DownloadedAudioService>()
         .AddSingleton<PageNavigationService>()
         .AddSingleton<SettingsService>()
         .AddSingleton<VlcService>();
 
-    var serviceProvider = services.BuildServiceProvider(true);
+    await using var serviceProvider = services.BuildServiceProvider(true);
 
-    var settingService = serviceProvider.GetService<SettingsService>()!;
+    await serviceProvider.GetService<SettingsService>()!.Load();
 
-    await settingService.Load();
-
-    var pageNavigationService = serviceProvider.GetService<PageNavigationService>()!;
-
-    if (!settingService.Setting.FirstTime)
-    {
-        await pageNavigationService.Open<PlayerPage>();
-        return;
-    }
-
-    settingService.Setting.FirstTime = false;
-    await settingService.Save();
-
-    await pageNavigationService.Open<MenuPage>();
+    await serviceProvider.GetService<PageNavigationService>()!.Open<MenuPage>();
 }
 catch (Exception e)
 {
     Console.WriteLine(e);
     Console.Read();
 }
-

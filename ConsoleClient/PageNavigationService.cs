@@ -10,12 +10,14 @@ public class PageNavigationService
 
     IPage? currentPage;
     readonly Stack<IPage> pagesStack = new Stack<IPage>();
+
+    bool exitRequested;
     
     public PageNavigationService(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
     }
-
+    
     public async Task Open<T>() where T : IPage => await Open(typeof(T));
 
     public async Task<TR> Open<T, TR>() where T : IPage<TR>
@@ -26,16 +28,12 @@ public class PageNavigationService
         var page = ActivatorUtilities.CreateInstance<T>(serviceProvider);
 
         currentPage = page;
-        Refresh();
+        RefreshShell();
 
         var result = await page.ShowAsync();
-        
-        if (pagesStack.Count != 0)
-            currentPage = pagesStack.Pop();
-        else
-            currentPage = null;
-        
-        return result;
+
+        NavigateBack();
+            return result;
     }
 
     public async Task Open(Type pageType)
@@ -48,17 +46,27 @@ public class PageNavigationService
             throw new NullReferenceException($"Page of type {pageType} not found");
 
         currentPage = page;
-        Refresh();
+        RefreshShell();
 
         await page.Show();
+        
+        NavigateBack();
+    }
+    void NavigateBack()
+    {
+        if (pagesStack.Count == 0)
+        {
+            currentPage = null;
+            return;
+        }
 
-        if (pagesStack.Count != 0)
+        if (!exitRequested)
             currentPage = pagesStack.Pop();
-
-        currentPage = null;
+        
+        exitRequested = false;
     }
 
-    public void Refresh()
+    public void RefreshShell()
     {
         if (currentPage == null)
             throw new NullReferenceException("Current page is null");
@@ -74,5 +82,9 @@ public class PageNavigationService
             new FigletText(page.Name)
                 .Centered()
                 .Color(Color.White));
+    }
+    public void RequestExit()
+    {
+        exitRequested = true;
     }
 }
