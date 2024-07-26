@@ -18,7 +18,8 @@ public class MenuPage : IPage
         [
             ("Player", typeof(PlayerPage)),
             ("Setting", typeof(SettingPage)),
-            ("Importer", typeof(ImporterPage))
+            ("Importer", typeof(ImporterPage)),
+            ("License", typeof(LicensesPage))
         ];
         var choice = AnsiConsole.Prompt(new SelectionPrompt<(string name, Type page)>()
             .Title("Menu")
