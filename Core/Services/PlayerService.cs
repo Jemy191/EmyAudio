@@ -1,5 +1,4 @@
 using Core.Models;
-using LibVLCSharp.Shared;
 
 namespace Core.Services;
 
@@ -25,10 +24,10 @@ public class PlayerService : IDisposable
         this.downloadedAudioService = downloadedAudioService;
         this.settingsService = settingsService;
 
-        vlcService.mediaPlayer.EndReached += OnAudioEnd;
-        vlcService.mediaPlayer.PositionChanged += OnAudioPositionChanged;
+        vlcService.OnAudioEnd += OnAudioEnd;
+        vlcService.OnPositionChanged += OnAudioPositionChanged;
     }
-
+    
     public async Task Start(RuntimePlaylist playlist, PlayerCallbacks callbacks)
     {
         if (started)
@@ -43,10 +42,10 @@ public class PlayerService : IDisposable
     public void Stop()
     {
         started = false;
-        vlcService.mediaPlayer.Stop();
+        vlcService.mediaPlayer!.Stop();
     }
 
-    public void TogglePause() => vlcService.mediaPlayer.Pause();
+    public void TogglePause() => vlcService.mediaPlayer!.Pause();
 
     public async Task Next()
     {
@@ -57,24 +56,18 @@ public class PlayerService : IDisposable
 
     public async Task Previous()
     {
-        var inFirst20Sec = vlcService.mediaPlayer.Time <= 20 * 1000;
+        var inFirst20Sec = vlcService.mediaPlayer!.Time <= 20 * 1000;
         if (inFirst20Sec)
             playlist?.Previous();
 
-        var restart = !inFirst20Sec || !await TryChangeAudio(true);
-
-        if (restart)
-        {
-            vlcService.mediaPlayer.Stop();
-            vlcService.mediaPlayer.Play();
-        }
+        await TryChangeAudio(!inFirst20Sec);
     }
 
     public async Task<int> SetVolume(int volume)
     {
         settingsService.Setting.Volume = Math.Clamp(settingsService.Setting.Volume + volume, 0, 100);
         await settingsService.Save();
-        vlcService.mediaPlayer.Volume = settingsService.Setting.Volume;
+        vlcService.mediaPlayer!.Volume = settingsService.Setting.Volume;
 
         return settingsService.Setting.Volume;
     }
@@ -84,25 +77,42 @@ public class PlayerService : IDisposable
         settingsService.Setting.Loop = !settingsService.Setting.Loop;
         await settingsService.Save();
     }
-
-    async Task<bool> TryChangeAudio(bool canRestart = false)
+    
+    async Task TryChangeAudio(bool canRestart = false)
     {
-        if (currentAudioInfo == playlist?.Current)
-            return !canRestart;
+        var restartAudio = currentAudioInfo == playlist?.Current && canRestart;
+        var hasOneAudio = playlist?.Count == 1 && vlcService.mediaPlayer!.Media is not null;
+        
+        if (restartAudio)
+        {
+            vlcService.mediaPlayer!.Stop();
+            vlcService.mediaPlayer.Play();
+            return;
+        }
+
+        if(hasOneAudio && settingsService.Setting.Loop)
+            vlcService.Reset();
+        
+        if(hasOneAudio && !settingsService.Setting.Loop)
+            return;
+        
 
         currentAudioInfo = playlist?.Current;
 
         if (currentAudioInfo is null)
-            return false;
+            return;
 
         var audioStream = downloadedAudioService.TryGetAudio(currentAudioInfo.Id);
 
+        Task? audioSavingTask = null;
         if (audioStream is null)
         {
             var downloadComplete = new TaskCompletionSource();
             callbacks?.OnDownload?.Invoke(downloadComplete.Task).Forget();
 
             audioStream = await youtubeStreamingService.GetAudioStream(currentAudioInfo.Id);
+
+            audioSavingTask = downloadedAudioService.SaveAudio(audioStream, currentAudioInfo.Id);
 
             downloadComplete.SetResult();
         }
@@ -114,11 +124,12 @@ public class PlayerService : IDisposable
 
         callbacks?.OnAudioChanged?.Invoke(currentAudioInfo, playlist!.CurrentIndex).Forget();
 
-        return true;
+        if (audioSavingTask is not null)
+            await audioSavingTask;
     }
 
-    void OnAudioPositionChanged(object? sender, MediaPlayerPositionChangedEventArgs e) => callbacks?.OnPositionChanged?.Invoke(e.Position);
-    void OnAudioEnd(object? sender, EventArgs e) => OnAudioEndAsync().Forget();
+    void OnAudioPositionChanged(float position) => callbacks?.OnPositionChanged?.Invoke(position);
+    void OnAudioEnd() => OnAudioEndAsync().Forget();
 
     async Task OnAudioEndAsync()
     {

@@ -22,6 +22,7 @@ public class RuntimePlaylist
             return audioInfos[CurrentIndex];
         }
     }
+    public int Count => audioInfos.Length;
 
     public void SetIndex(int newIndex)
     {

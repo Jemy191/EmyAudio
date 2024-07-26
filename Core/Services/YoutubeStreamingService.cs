@@ -8,13 +8,11 @@ public class YoutubeStreamingService
 {
     readonly YoutubeClient youtubeStream;
     readonly YouTubeService youtubeApi;
-    readonly DownloadedAudioService downloadedAudioService;
 
-    public YoutubeStreamingService(YoutubeClient youtubeStream, YouTubeService youtubeApi, DownloadedAudioService downloadedAudioService)
+    public YoutubeStreamingService(YoutubeClient youtubeStream, YouTubeService youtubeApi)
     {
         this.youtubeStream = youtubeStream;
         this.youtubeApi = youtubeApi;
-        this.downloadedAudioService = downloadedAudioService;
     }
     
     public async Task<Stream> GetAudioStream(string id)
@@ -29,8 +27,6 @@ public class YoutubeStreamingService
 
         
         var stream = await youtubeStream.Videos.Streams.GetAsync(streamInfo);
-
-        await downloadedAudioService.SaveAudio(stream, id);
         
         return stream;
     }
