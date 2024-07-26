@@ -140,7 +140,7 @@ public class PlayerPage : IPage
 
             if (playlistInfo is null)
                 return true;
-
+            
             var key = Console.ReadKey().Key;
 
             switch (key)
