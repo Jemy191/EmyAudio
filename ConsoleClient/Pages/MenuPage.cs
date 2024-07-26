@@ -23,21 +23,24 @@ public class MenuPage : IPage
             await pageNavigationService.Open<PlayerPage>();
         }
 
-        settingsService.Setting.FirstTime = false;
-        await settingsService.Save();
-        
-        List<(string name, Type page)> pages =
-        [
-            ("Player", typeof(PlayerPage)),
-            ("Setting", typeof(SettingPage)),
-            ("Importer", typeof(ImporterPage)),
-            ("License", typeof(LicensesPage))
-        ];
-        var choice = AnsiConsole.Prompt(new SelectionPrompt<(string name, Type page)>()
-            .Title("Menu")
-            .AddChoices(pages)
-            .UseConverter(c => c.name));
+        while (!pageNavigationService.ExitRequested)
+        {
+            settingsService.Setting.FirstTime = false;
+            await settingsService.Save();
 
-        await pageNavigationService.Open(choice.page);
+            List<(string name, Type page)> pages =
+            [
+                ("Player", typeof(PlayerPage)),
+                ("Setting", typeof(SettingPage)),
+                ("Importer", typeof(ImporterPage)),
+                ("License", typeof(LicensesPage))
+            ];
+            var choice = AnsiConsole.Prompt(new SelectionPrompt<(string name, Type page)>()
+                .Title("Menu")
+                .AddChoices(pages)
+                .UseConverter(c => c.name));
+
+            await pageNavigationService.Open(choice.page);
+        }
     }
 }

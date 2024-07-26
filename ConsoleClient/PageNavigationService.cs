@@ -11,8 +11,8 @@ public class PageNavigationService
     IPage? currentPage;
     readonly Stack<IPage> pagesStack = new Stack<IPage>();
 
-    bool exitRequested;
-    
+    public bool ExitRequested { get; set; }
+
     public PageNavigationService(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
@@ -60,10 +60,10 @@ public class PageNavigationService
             return;
         }
 
-        if (!exitRequested)
-            currentPage = pagesStack.Pop();
-        
-        exitRequested = false;
+        if (ExitRequested)
+            return;
+        currentPage = pagesStack.Pop();
+        RefreshShell();
     }
 
     public void RefreshShell()
@@ -85,6 +85,6 @@ public class PageNavigationService
     }
     public void RequestExit()
     {
-        exitRequested = true;
+        ExitRequested = true;
     }
 }

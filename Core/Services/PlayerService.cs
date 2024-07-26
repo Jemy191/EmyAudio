@@ -112,7 +112,9 @@ public class PlayerService : IDisposable
 
             audioStream = await youtubeStreamingService.GetAudioStream(currentAudioInfo.Id);
 
-            audioSavingTask = downloadedAudioService.SaveAudio(audioStream, currentAudioInfo.Id);
+            var streamToSave = new MemoryStream();
+            await audioStream.CopyToAsync(streamToSave);
+            audioSavingTask = downloadedAudioService.SaveAudio(streamToSave, currentAudioInfo.Id);
 
             downloadComplete.SetResult();
         }

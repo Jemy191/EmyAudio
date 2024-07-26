@@ -24,7 +24,6 @@ public class YoutubeStreamingService
             .GetAudioOnlyStreams()
             .Where(s => s.Container == Container.Mp4)
             .GetWithHighestBitrate();
-
         
         var stream = await youtubeStream.Videos.Streams.GetAsync(streamInfo);
         
