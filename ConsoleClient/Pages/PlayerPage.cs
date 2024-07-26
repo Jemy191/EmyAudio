@@ -146,7 +146,7 @@ public class PlayerPage : IPage
 
             dirty = false;
 
-            var key = Console.ReadKey().Key;
+            var key = Console.ReadKey(false).Key;
 
             switch (key)
             {
