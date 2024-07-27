@@ -69,6 +69,7 @@ public class PlayerPage : IPage
         pageNavigationService.RefreshShell();
 
         AnsiConsole.MarkupLineInterpolated($"""
+                                            Playlist: {playerService.CurrentPlaylistName}
                                             Now playing: {currentAudioInfo?.Name}
                                             Control:
                                             Space -> Toggle pause, M -> Menu, T -> Tag choosing, Escape -> Exit

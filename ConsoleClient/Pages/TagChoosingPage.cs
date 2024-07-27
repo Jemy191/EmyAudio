@@ -46,6 +46,9 @@ public class TagChoosingPage : IPage<RuntimePlaylist>
         if(shuffle)
             Random.Shared.Shuffle(playlist);
             
-        return new RuntimePlaylist(playlist);
+        return new RuntimePlaylist(playlist)
+        {
+            Name = selectedPlayList.Item1
+        };
     }
 }

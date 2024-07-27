@@ -13,6 +13,8 @@ public class PlayerService : IDisposable
     PlayerCallbacks? callbacks;
     RuntimePlaylist? playlist;
     AudioInfo? currentAudioInfo;
+    
+    public string CurrentPlaylistName => playlist?.Name ?? "Error";
 
     public PlayerService(YoutubeStreamingService youtubeStreamingService,
                          VlcService vlcService,

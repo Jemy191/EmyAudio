@@ -6,9 +6,10 @@ namespace Core;
 public class RuntimePlaylist
 {
     readonly AudioInfo[] audioInfos;
+
+    public required string Name { get; init; }
     public int CurrentIndex { get; private set; }
-    
-    public ReadOnlyCollection<AudioInfo> AudioInfos => audioInfos.AsReadOnly();
+    public IEnumerable<AudioInfo> AudioInfos => audioInfos.AsReadOnly();
 
     public RuntimePlaylist(AudioInfo[] audioInfos)
     {
