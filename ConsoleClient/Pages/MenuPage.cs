@@ -20,7 +20,9 @@ public class MenuPage : IPage
     {
         if (!settingsService.Setting.FirstTime)
         {
-            await pageNavigationService.Open<PlayerPage>();
+            var @continue = AnsiConsole.Confirm("Continue last listening session?");
+            if(@continue)
+                await pageNavigationService.Open<PlayerPage>();
         }
 
         while (!pageNavigationService.ExitRequested)
@@ -33,6 +35,7 @@ public class MenuPage : IPage
                 ("Player", typeof(PlayerPage)),
                 ("Setting", typeof(SettingPage)),
                 ("Importer", typeof(ImporterPage)),
+                ("Playlist downloader", typeof(PlaylistDownloader)),
                 ("License", typeof(LicensesPage))
             ];
             var choice = AnsiConsole.Prompt(new SelectionPrompt<(string name, Type page)>()

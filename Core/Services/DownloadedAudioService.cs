@@ -17,6 +17,12 @@ public class DownloadedAudioService
     {
         Directory.CreateDirectory(audioDownloadFolder);
 
-        await audio.CopyToAsync(File.OpenWrite(Path.Combine(audioDownloadFolder, $"{id}.mp4")));
+        var path = Path.Combine(audioDownloadFolder, $"{id}.mp4");
+
+        if (Path.Exists(path))
+            return;
+        
+        await using var fileStream = File.OpenWrite(path);
+        await audio.CopyToAsync(fileStream);
     }
 }

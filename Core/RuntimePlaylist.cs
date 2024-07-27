@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Core.Models;
 
 namespace Core;
@@ -6,6 +7,8 @@ public class RuntimePlaylist
 {
     readonly AudioInfo[] audioInfos;
     public int CurrentIndex { get; private set; }
+    
+    public ReadOnlyCollection<AudioInfo> AudioInfos => audioInfos.AsReadOnly();
 
     public RuntimePlaylist(AudioInfo[] audioInfos)
     {
