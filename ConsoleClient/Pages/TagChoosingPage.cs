@@ -39,7 +39,7 @@ public class TagChoosingPage : IPage<RuntimePlaylist>
             Id = a.Item2,
             Name = a.Item1,
             Type = AudioType.Music,
-            Length = 100,
+            Duration = TimeSpan.FromMinutes(1),
             Score = 0
         }).ToArray();
         

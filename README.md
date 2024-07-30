@@ -12,6 +12,7 @@ There also other interesting feature like:
   * [ ] Linked audio. -> useful for listening to non music video.
 * [ ] Tags group and tags random group. -> To keep similar audio near and randomly near.
 * [ ] Cross-platform
+* [x] Use your own postgres database
 
 ### Explanation
 Instead of having:
@@ -67,6 +68,7 @@ You have:
 * Install it where you want
 * [Get your google cred](#creating-and-downloading-google-oauth-credential)
 * Put it in the installation folder
+* [Set up a postgres db](#set-up-a-postgres-db)
 * Enjoy 😁
 
 ### Build instruction
@@ -77,6 +79,9 @@ You have:
 ### Creating and downloading google OAuth credential
 * Go to [Google OAuth guide](https://developers.google.com/youtube/v3/guides/auth/installed-apps)
 * Download you OAuth credential
+
+### Set up a postgres db
+Eiter set up a postgres db with a cloud provider or with the provided docker-compose
 
 ### Creating the license file
 Use ```dotnet-project-licenses -i .\ConsoleClient\ --outfile ConsoleClientLicense.txt -t```

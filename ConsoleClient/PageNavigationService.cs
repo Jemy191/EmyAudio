@@ -41,7 +41,9 @@ public class PageNavigationService
         if (currentPage is not null)
             pagesStack.Push(currentPage);
         
-        var pageInstance = ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+        await using var serviceScope = serviceProvider.CreateAsyncScope();
+        
+        var pageInstance = ActivatorUtilities.CreateInstance(serviceScope.ServiceProvider, pageType);
         if (pageInstance is not IPage page)
             throw new NullReferenceException($"Page of type {pageType} not found");
 

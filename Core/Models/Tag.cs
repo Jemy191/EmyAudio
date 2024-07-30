@@ -1,21 +1,22 @@
+using System.ComponentModel.DataAnnotations;
 using YoutubeExplode.Playlists;
+using YoutubeExplode.Videos;
 
 namespace Core.Models;
 
 public class Tag
 {
+    [Key]
     public required string Name { get; set; }
     public required bool Downloaded { get; set; }
     public required TagType Type { get; set; }
-    public required int Score { get; set; }
+    public int Score { get; set; }
     public string? Parent { get; set; }
     public string? Next { get; set; }
     public string? Previous { get; set; }
+    public bool Hidden { get; set; }
 
-    public required PlaylistId? OriginalPlaylistId { get; init; }
+    public required string? OriginalPlaylistId { get; init; }
 
-    public Tag()
-    {
-        
-    }
+    public HashSet<AudioInfo> AudioInfos { get; init; } = [];
 }

@@ -659,3 +659,5 @@ fabric.properties
 
 .idea/
 /Core/YoutubeOAuthCred.json
+/Core/LocalData/
+/Core/appsettings.Development.json

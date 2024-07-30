@@ -11,7 +11,6 @@ public class SettingsService
 
     public async Task Load()
     {
-        
         if (!File.Exists(SettingsFileName))
         {
             Setting = new Setting();

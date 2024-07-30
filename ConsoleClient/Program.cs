@@ -1,11 +1,9 @@
 ﻿using ConsoleClient;
 using ConsoleClient.Pages;
+using Core;
 using Core.Services;
-using Google.Apis.Services;
-using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
-using YoutubeExplode;
 
 try
 {
@@ -16,24 +14,24 @@ try
             .Color(Color.Pink1));
 
     var cred = await GoogleAuthService.Connect();
-    var youtubeApi = new YouTubeService(new BaseClientService.Initializer
+    
+    var settingService = new SettingsService();
+    await settingService.Load();
+
+    var postgresConnectionString = settingService.Setting.PostgresConnectionString;
+    
+    if(string.IsNullOrWhiteSpace(postgresConnectionString))
     {
-        HttpClientInitializer = cred,
-        ApplicationName = "Emy audio"
-    });
+        postgresConnectionString = AnsiConsole.Ask<string>("Please provide you postgres connection string");
+        settingService.Setting.PostgresConnectionString = postgresConnectionString;
+        await settingService.Save();
+    }
 
-    var services = new ServiceCollection()
-        .AddSingleton(youtubeApi)
-        .AddTransient<YoutubeStreamingService>()
-        .AddTransient<YoutubeClient>()
-        .AddTransient<PlayerService>()
-        .AddTransient<GoogleAuthService>()
-        .AddTransient<DownloadedAudioService>()
-        .AddSingleton<PageNavigationService>()
-        .AddSingleton<SettingsService>()
-        .AddSingleton<VlcService>();
+    await using var builder = new AppBuilder(cred, postgresConnectionString)
+        .ConfigureServices(service => service
+            .AddSingleton<PageNavigationService>());
 
-    await using var serviceProvider = services.BuildServiceProvider(true);
+    var serviceProvider = builder.Build();
 
     await serviceProvider.GetService<SettingsService>()!.Load();
 
