@@ -1,8 +1,8 @@
-using Core.Models;
+using EmyAudio.Models;
 using Microsoft.EntityFrameworkCore;
 using YoutubeExplode.Videos;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class AudioService
 {

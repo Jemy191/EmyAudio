@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{01B50EAF-AE47-452F-A94B-02E17F1FD070}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmyAudio", "EmyAudio\EmyAudio.csproj", "{01B50EAF-AE47-452F-A94B-02E17F1FD070}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClient", "ConsoleClient\ConsoleClient.csproj", "{36278C9B-5043-418B-8AAC-F0AB46AB62C4}"
 EndProject
@@ -8,11 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionF
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 		.gitignore = .gitignore
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DDF7C1A5-1838-4680-9283-A5AF60807298}"
-	ProjectSection(SolutionItems) = preProject
-		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
 Global

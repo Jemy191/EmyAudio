@@ -658,6 +658,6 @@ fabric.properties
 # Custom
 
 .idea/
-/Core/YoutubeOAuthCred.json
-/Core/LocalData/
-/Core/appsettings.Development.json
+/**/YoutubeOAuthCred.json
+/**/LocalData/
+/**/appsettings.Development.json

@@ -1,6 +1,6 @@
 using System.Xml;
-using Core.Models;
-using Core.Services;
+using EmyAudio.Models;
+using EmyAudio.Services;
 using Google.Apis.Util;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;

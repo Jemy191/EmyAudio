@@ -2,7 +2,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class GoogleAuthService
 {

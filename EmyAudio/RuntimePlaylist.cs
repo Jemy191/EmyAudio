@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using Core.Models;
+using EmyAudio.Models;
 
-namespace Core;
+namespace EmyAudio;
 
 public class RuntimePlaylist
 {

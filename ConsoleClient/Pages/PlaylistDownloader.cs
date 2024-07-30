@@ -1,5 +1,5 @@
-using Core;
-using Core.Services;
+using EmyAudio;
+using EmyAudio.Services;
 using Spectre.Console;
 
 namespace ConsoleClient.Pages;

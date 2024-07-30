@@ -1,7 +1,7 @@
-using Core.Models;
+using EmyAudio.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class TagService
 {

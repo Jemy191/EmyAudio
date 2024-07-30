@@ -2,7 +2,7 @@ using Google.Apis.YouTube.v3;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class YoutubeStreamingService
 {

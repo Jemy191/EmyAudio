@@ -1,6 +1,6 @@
 using LibVLCSharp.Shared;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class VlcService : IDisposable
 {

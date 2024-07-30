@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Core.Models;
+namespace EmyAudio.Models;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class GoogleApiCredentials

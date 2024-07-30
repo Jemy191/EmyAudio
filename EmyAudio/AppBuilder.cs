@@ -1,4 +1,4 @@
-using Core.Services;
+using EmyAudio.Services;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using YoutubeExplode;
 
-namespace Core;
+namespace EmyAudio;
 
 public class AppBuilder(UserCredential cred, string postgresConnectionString) : IAsyncDisposable
 {

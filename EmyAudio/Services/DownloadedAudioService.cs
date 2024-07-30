@@ -1,6 +1,6 @@
 using YoutubeExplode.Videos;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class DownloadedAudioService
 {

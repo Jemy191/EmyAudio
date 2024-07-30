@@ -1,6 +1,6 @@
-using Core.Models;
+using EmyAudio.Models;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class PlayerService : IDisposable
 {

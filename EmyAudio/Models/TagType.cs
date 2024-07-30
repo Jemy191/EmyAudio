@@ -1,4 +1,4 @@
-namespace Core.Models;
+namespace EmyAudio.Models;
 
 public enum TagType
 {

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using YoutubeExplode.Videos;
 
-namespace Core.Models;
+namespace EmyAudio.Models;
 
 public class AudioInfo
 {

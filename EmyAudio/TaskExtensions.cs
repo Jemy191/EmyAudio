@@ -1,4 +1,4 @@
-namespace Core;
+namespace EmyAudio;
 
 public static class TaskExtensions
 {

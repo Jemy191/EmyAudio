@@ -1,7 +1,7 @@
 ﻿using ConsoleClient;
 using ConsoleClient.Pages;
-using Core;
-using Core.Services;
+using EmyAudio;
+using EmyAudio.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 

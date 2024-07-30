@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Core.Migrations
+namespace EmyAudio.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

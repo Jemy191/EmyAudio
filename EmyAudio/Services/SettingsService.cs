@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Core.Models;
+using EmyAudio.Models;
 
-namespace Core.Services;
+namespace EmyAudio.Services;
 
 public class SettingsService
 {
