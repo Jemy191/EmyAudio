@@ -1,25 +1,36 @@
 using EmyAudio.Models;
+using EmyAudio.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace EmyAudio;
 
 public class AppDbContext : DbContext
 {
+    readonly IConfiguration configuration;
     public DbSet<AudioInfo> AudioInfos { get; init; }
     public DbSet<AudioSkip> AudioSkips { get; init; }
     public DbSet<Tag> Tags { get; init; }
 
-    protected AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
+    protected AppDbContext(IConfiguration configuration)
     {
+        this.configuration = configuration;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
 
-        if(!optionsBuilder.IsConfigured)
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Dev_EmyAudioDatabase;Username=Admin;Password=8888z4");
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connectionString = configuration["PostgresConnectionString"];
+            optionsBuilder.UseNpgsql(connectionString);
+        }
+        
+        Database.Migrate();
+        
+        if(!Database.CanConnect())
+            throw new Exception($"Cannot connect to PostgresSQL Server. Please check your appsettings.json.");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

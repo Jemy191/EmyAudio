@@ -3,6 +3,7 @@ using ConsoleClient.Pages;
 using EmyAudio;
 using EmyAudio.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Spectre.Console;
 
 try
@@ -14,28 +15,19 @@ try
             .Color(Color.Pink1));
 
     var cred = await GoogleAuthService.Connect();
+
+    var builder = Host.CreateApplicationBuilder(args);
+
+    builder.UseEmyAudio(cred);
+
+    builder.Services
+        .AddHostedService<AppHost>()
+        .AddSingleton<PageNavigationService>();
     
-    var settingService = new SettingsService();
-    await settingService.Load();
+    using var app = builder.Build();
 
-    var postgresConnectionString = settingService.Setting.PostgresConnectionString;
-    
-    if(string.IsNullOrWhiteSpace(postgresConnectionString))
-    {
-        postgresConnectionString = AnsiConsole.Ask<string>("Please provide you postgres connection string");
-        settingService.Setting.PostgresConnectionString = postgresConnectionString;
-        await settingService.Save();
-    }
-
-    await using var builder = new AppBuilder(cred, postgresConnectionString)
-        .ConfigureServices(service => service
-            .AddSingleton<PageNavigationService>());
-
-    var serviceProvider = builder.Build();
-
-    await serviceProvider.GetService<SettingsService>()!.Load();
-
-    await serviceProvider.GetService<PageNavigationService>()!.Open<MenuPage>();
+    await app.InitEmyAudio();
+    await app.RunAsync();
 }
 catch (Exception e)
 {
