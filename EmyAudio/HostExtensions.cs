@@ -2,6 +2,9 @@ using EmyAudio.Services;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using YoutubeExplode;
@@ -17,9 +20,16 @@ public static class HostExtensions
             HttpClientInitializer = cred,
             ApplicationName = "Emy audio"
         });
-        
+
         builder.Services
-            .AddDbContext<AppDbContext>()
+            .AddDbContext<AppDbContext>((services, optionsBuilder) =>
+            {
+                var configuration = services.GetRequiredService<IConfiguration>();
+                var connectionString = configuration["PostgresConnectionString"];
+                if (string.IsNullOrEmpty(connectionString))
+                    throw new InvalidOperationException("PostgresConnectionString is not configured");
+                optionsBuilder.UseNpgsql(connectionString);
+            })
             .AddSingleton(youtubeApi)
             .AddTransient<YoutubeStreamingService>()
             .AddTransient<YoutubeClient>()
@@ -37,6 +47,9 @@ public static class HostExtensions
     public static async Task<IHost> InitEmyAudio(this IHost host)
     {
         await host.Services.GetService<SettingsService>()!.Load();
+        await using var scope =  host.Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Init();
+        
         return host;
     }
 }

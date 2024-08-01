@@ -1,36 +1,43 @@
 using EmyAudio.Models;
-using EmyAudio.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EmyAudio;
 
 public class AppDbContext : DbContext
 {
-    readonly IConfiguration configuration;
     public DbSet<AudioInfo> AudioInfos { get; init; }
     public DbSet<AudioSkip> AudioSkips { get; init; }
     public DbSet<Tag> Tags { get; init; }
 
-    protected AppDbContext(IConfiguration configuration)
+    // Required to enable migration directly on the class lib proj
+    public AppDbContext()
     {
-        this.configuration = configuration;
+        
+    }
+    
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+    : base(options)
+    {
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-
         if (!optionsBuilder.IsConfigured)
         {
-            var connectionString = configuration["PostgresConnectionString"];
-            optionsBuilder.UseNpgsql(connectionString);
+            optionsBuilder.UseNpgsql();
         }
-        
-        Database.Migrate();
-        
-        if(!Database.CanConnect())
-            throw new Exception($"Cannot connect to PostgresSQL Server. Please check your appsettings.json.");
+    }
+
+    public async Task Init()
+    {
+        if (!await Database.CanConnectAsync())
+            throw new InvalidOperationException($"Cannot connect to PostgresSQL Server. Please check your appsettings.json.");
+
+        await Database.GetInfrastructure().GetRequiredService<IMigrator>().MigrateAsync();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

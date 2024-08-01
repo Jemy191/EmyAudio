@@ -15,15 +15,15 @@ namespace EmyAudio.Migrations
                 name: "AudioInfos",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
-                    Duration = table.Column<TimeSpan>(type: "TEXT", nullable: false),
-                    Score = table.Column<int>(type: "INTEGER", nullable: false),
-                    LastPlayed = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    TimePlayed = table.Column<uint>(type: "INTEGER", nullable: false),
-                    Next = table.Column<string>(type: "TEXT", nullable: true),
-                    Previous = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Duration = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    Score = table.Column<int>(type: "integer", nullable: false),
+                    LastPlayed = table.Column<DateOnly>(type: "date", nullable: false),
+                    TimePlayed = table.Column<long>(type: "bigint", nullable: false),
+                    Next = table.Column<string>(type: "text", nullable: true),
+                    Previous = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -34,15 +34,15 @@ namespace EmyAudio.Migrations
                 name: "Tags",
                 columns: table => new
                 {
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Downloaded = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
-                    Score = table.Column<int>(type: "INTEGER", nullable: false),
-                    Parent = table.Column<string>(type: "TEXT", nullable: true),
-                    Next = table.Column<string>(type: "TEXT", nullable: true),
-                    Previous = table.Column<string>(type: "TEXT", nullable: true),
-                    Hidden = table.Column<bool>(type: "INTEGER", nullable: false),
-                    OriginalPlaylistId = table.Column<string>(type: "TEXT", nullable: true)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Downloaded = table.Column<bool>(type: "boolean", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Score = table.Column<int>(type: "integer", nullable: false),
+                    Parent = table.Column<string>(type: "text", nullable: true),
+                    Next = table.Column<string>(type: "text", nullable: true),
+                    Previous = table.Column<string>(type: "text", nullable: true),
+                    Hidden = table.Column<bool>(type: "boolean", nullable: false),
+                    OriginalPlaylistId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -53,10 +53,10 @@ namespace EmyAudio.Migrations
                 name: "AudioSkips",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Start = table.Column<long>(type: "INTEGER", nullable: false),
-                    End = table.Column<long>(type: "INTEGER", nullable: false),
-                    AudioInfoId = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Start = table.Column<long>(type: "bigint", nullable: false),
+                    End = table.Column<long>(type: "bigint", nullable: false),
+                    AudioInfoId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,8 +73,8 @@ namespace EmyAudio.Migrations
                 name: "AudioInfoToTagJoin",
                 columns: table => new
                 {
-                    AudioInfoId = table.Column<string>(type: "TEXT", nullable: false),
-                    TagName = table.Column<string>(type: "TEXT", nullable: false)
+                    AudioInfoId = table.Column<string>(type: "text", nullable: false),
+                    TagName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

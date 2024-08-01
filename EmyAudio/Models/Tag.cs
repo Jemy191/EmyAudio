@@ -1,6 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using YoutubeExplode.Playlists;
-using YoutubeExplode.Videos;
 
 namespace EmyAudio.Models;
 

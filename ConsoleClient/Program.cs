@@ -1,7 +1,7 @@
 ﻿using ConsoleClient;
-using ConsoleClient.Pages;
 using EmyAudio;
 using EmyAudio.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Spectre.Console;
@@ -17,6 +17,8 @@ try
     var cred = await GoogleAuthService.Connect();
 
     var builder = Host.CreateApplicationBuilder(args);
+
+    builder.Configuration.AddUserSecrets(typeof(AppDbContext).Assembly);
 
     builder.UseEmyAudio(cred);
 

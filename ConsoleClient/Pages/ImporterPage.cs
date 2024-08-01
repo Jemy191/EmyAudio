@@ -4,7 +4,6 @@ using EmyAudio.Services;
 using Google.Apis.Util;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
-using LibVLCSharp.Shared;
 using Spectre.Console;
 
 namespace ConsoleClient.Pages;
@@ -76,10 +75,10 @@ public class ImporterPage : IPage
             var tags = await Tag(name, willDownload, id, addAdditionalTags, tagType, usePlaylistNameAsTag);
 
             await Audio(audioInfosTask, tags, audioType);
-            
-            AnsiConsole.MarkupLine("[green]Success![/]");
-            Console.Read();
+
         }
+        AnsiConsole.MarkupLine("[green]Success![/]");
+        Console.Read();
     }
     async Task Audio(Task<VideoListResponse> audioInfosTask, List<Tag> tags, AudioType audioType)
     {
@@ -115,7 +114,7 @@ public class ImporterPage : IPage
 
         if (!usePlaylistNameAsTag)
             name = AnsiConsole.Ask<string>("What is the name of the tag?");
-        
+
         List<Tag> tags =
         [
             new Tag

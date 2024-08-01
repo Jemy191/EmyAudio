@@ -8,6 +8,7 @@
         <Company>Jemy191</Company>
         <Product>EmyAudio</Product>
         <ApplicationIcon>AppIcon.ico</ApplicationIcon>
+        <UserSecretsId>839b3277-c37b-4973-a7ef-28c25a4a190a</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
