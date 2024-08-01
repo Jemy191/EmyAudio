@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "ConsoleClient": {
+      "commandName": "Project",
+      "commandLineArgs": "--environment Development"
+    }
+  }
+}
