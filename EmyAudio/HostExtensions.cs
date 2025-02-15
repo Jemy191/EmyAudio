@@ -38,7 +38,7 @@ public static class HostExtensions
             .AddTransient<AudioRepository>()
             .AddTransient<TagService>()
             .AddSingleton<SettingsService>()
-            .AddSingleton<VlcService>();
+            .AddSingleton<AudioPlayerService>();
 
         return builder;
     }

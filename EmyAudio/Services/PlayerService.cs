@@ -4,7 +4,7 @@ namespace EmyAudio.Services;
 
 public class PlayerService : IDisposable
 {
-    readonly YoutubeApiService youtubeApiService;
+    readonly YoutubeStreamingService youtubeStreamingService;
     readonly VlcService vlcService;
     readonly DownloadedAudioService downloadedAudioService;
     readonly SettingsService settingsService;
@@ -16,12 +16,12 @@ public class PlayerService : IDisposable
     
     public string CurrentPlaylistName => playlist?.Name ?? "Error";
 
-    public PlayerService(YoutubeApiService youtubeApiService,
+    public PlayerService(YoutubeStreamingService youtubeStreamingService,
                          VlcService vlcService,
                          DownloadedAudioService downloadedAudioService,
                          SettingsService settingsService)
     {
-        this.youtubeApiService = youtubeApiService;
+        this.youtubeStreamingService = youtubeStreamingService;
         this.vlcService = vlcService;
         this.downloadedAudioService = downloadedAudioService;
         this.settingsService = settingsService;
@@ -44,10 +44,10 @@ public class PlayerService : IDisposable
     public void Stop()
     {
         started = false;
-        vlcService.mediaPlayer!.Stop();
+        audioPlayerService.Stop();
     }
 
-    public void TogglePause() => vlcService.mediaPlayer!.Pause();
+    public void TogglePause() => audioPlayerService.TogglePause();
 
     public async Task Next()
     {
@@ -58,7 +58,7 @@ public class PlayerService : IDisposable
 
     public async Task Previous()
     {
-        var inFirst20Sec = vlcService.mediaPlayer!.Time <= 20 * 1000;
+        var inFirst20Sec = audioPlayerService.Position <= 20 * 1000;
         if (inFirst20Sec)
             playlist?.Previous();
 
@@ -69,7 +69,7 @@ public class PlayerService : IDisposable
     {
         settingsService.Setting.Volume = Math.Clamp(settingsService.Setting.Volume + volume, 0, 100);
         await settingsService.Save();
-        vlcService.mediaPlayer!.Volume = settingsService.Setting.Volume;
+        audioPlayerService.Volume = settingsService.Setting.Volume;
 
         return settingsService.Setting.Volume;
     }
@@ -87,13 +87,13 @@ public class PlayerService : IDisposable
         
         if (restartAudio)
         {
-            vlcService.mediaPlayer!.Stop();
-            vlcService.mediaPlayer.Play();
+            audioPlayerService.Stop();
+            audioPlayerService.Play();
             return;
         }
 
         if(hasOneAudio && settingsService.Setting.Loop)
-            vlcService.Reset();
+            audioPlayerService.Reset();
         
         if(hasOneAudio && !settingsService.Setting.Loop)
             return;
@@ -112,7 +112,7 @@ public class PlayerService : IDisposable
             var downloadComplete = new TaskCompletionSource();
             callbacks?.OnDownload?.Invoke(downloadComplete.Task).Forget();
 
-            audioStream = await youtubeApiService.GetAudioStream(currentAudioInfo.Id);
+            audioStream = await youtubeStreamingService.GetAudioStream(currentAudioInfo.Id);
 
             var streamToSave = new MemoryStream();
             await audioStream.CopyToAsync(streamToSave);
@@ -124,7 +124,7 @@ public class PlayerService : IDisposable
         if (audioStream is null)
             throw new NullReferenceException("Audio stream is null");
 
-        await vlcService.Play(audioStream);
+        audioPlayerService.Play(audioStream);
 
         callbacks?.OnAudioChanged?.Invoke(currentAudioInfo, playlist!.CurrentIndex).Forget();
 
