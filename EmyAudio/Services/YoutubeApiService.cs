@@ -4,12 +4,12 @@ using YoutubeExplode.Videos.Streams;
 
 namespace EmyAudio.Services;
 
-public class YoutubeStreamingService
+public class YoutubeApiService
 {
     readonly YoutubeClient youtubeStream;
     readonly YouTubeService youtubeApi;
 
-    public YoutubeStreamingService(YoutubeClient youtubeStream, YouTubeService youtubeApi)
+    public YoutubeApiService(YoutubeClient youtubeStream, YouTubeService youtubeApi)
     {
         this.youtubeStream = youtubeStream;
         this.youtubeApi = youtubeApi;

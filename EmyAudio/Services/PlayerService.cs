@@ -4,7 +4,7 @@ namespace EmyAudio.Services;
 
 public class PlayerService : IDisposable
 {
-    readonly YoutubeStreamingService youtubeStreamingService;
+    readonly YoutubeApiService youtubeApiService;
     readonly VlcService vlcService;
     readonly DownloadedAudioService downloadedAudioService;
     readonly SettingsService settingsService;
@@ -16,12 +16,12 @@ public class PlayerService : IDisposable
     
     public string CurrentPlaylistName => playlist?.Name ?? "Error";
 
-    public PlayerService(YoutubeStreamingService youtubeStreamingService,
+    public PlayerService(YoutubeApiService youtubeApiService,
                          VlcService vlcService,
                          DownloadedAudioService downloadedAudioService,
                          SettingsService settingsService)
     {
-        this.youtubeStreamingService = youtubeStreamingService;
+        this.youtubeApiService = youtubeApiService;
         this.vlcService = vlcService;
         this.downloadedAudioService = downloadedAudioService;
         this.settingsService = settingsService;
@@ -112,7 +112,7 @@ public class PlayerService : IDisposable
             var downloadComplete = new TaskCompletionSource();
             callbacks?.OnDownload?.Invoke(downloadComplete.Task).Forget();
 
-            audioStream = await youtubeStreamingService.GetAudioStream(currentAudioInfo.Id);
+            audioStream = await youtubeApiService.GetAudioStream(currentAudioInfo.Id);
 
             var streamToSave = new MemoryStream();
             await audioStream.CopyToAsync(streamToSave);

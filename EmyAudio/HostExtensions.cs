@@ -3,7 +3,6 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,12 +30,12 @@ public static class HostExtensions
                 optionsBuilder.UseNpgsql(connectionString);
             })
             .AddSingleton(youtubeApi)
-            .AddTransient<YoutubeStreamingService>()
+            .AddTransient<YoutubeApiService>()
             .AddTransient<YoutubeClient>()
             .AddTransient<PlayerService>()
             .AddTransient<GoogleAuthService>()
             .AddTransient<DownloadedAudioService>()
-            .AddTransient<AudioService>()
+            .AddTransient<AudioRepository>()
             .AddTransient<TagService>()
             .AddSingleton<SettingsService>()
             .AddSingleton<VlcService>();

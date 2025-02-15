@@ -6,14 +6,14 @@ namespace ConsoleClient.Pages;
 
 public class PlaylistDownloader : IPage
 {
-    readonly YoutubeStreamingService youtubeStreamingService;
+    readonly YoutubeApiService youtubeApiService;
     readonly PageNavigationService pageNavigationService;
     readonly DownloadedAudioService downloadedAudioService;
     public string Name => "Playlist downloader";
 
-    public PlaylistDownloader(YoutubeStreamingService youtubeStreamingService, PageNavigationService pageNavigationService, DownloadedAudioService downloadedAudioService)
+    public PlaylistDownloader(YoutubeApiService youtubeApiService, PageNavigationService pageNavigationService, DownloadedAudioService downloadedAudioService)
     {
-        this.youtubeStreamingService = youtubeStreamingService;
+        this.youtubeApiService = youtubeApiService;
         this.pageNavigationService = pageNavigationService;
         this.downloadedAudioService = downloadedAudioService;
     }
@@ -30,7 +30,7 @@ public class PlaylistDownloader : IPage
                 
                 var tasks = playlistInfo.AudioInfos.Select(audio => Task.Run(async () =>
                     {
-                        var audioStream = await youtubeStreamingService.GetAudioStream(audio.Id);
+                        var audioStream = await youtubeApiService.GetAudioStream(audio.Id);
                         await downloadedAudioService.SaveAudio(audioStream, audio.Id);
 
                         lock (task)

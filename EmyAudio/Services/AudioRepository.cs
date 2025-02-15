@@ -4,10 +4,10 @@ using YoutubeExplode.Videos;
 
 namespace EmyAudio.Services;
 
-public class AudioService
+public class AudioRepository
 {
     readonly AppDbContext dbContext;
-    public AudioService(AppDbContext dbContext)
+    public AudioRepository(AppDbContext dbContext)
     {
         this.dbContext = dbContext;
     }

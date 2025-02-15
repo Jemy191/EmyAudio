@@ -10,20 +10,20 @@ namespace ConsoleClient.Pages;
 
 public class ImporterPage : IPage
 {
-    readonly YoutubeStreamingService youtubeStreamingService;
+    readonly YoutubeApiService youtubeApiService;
     readonly YouTubeService youtubeApi;
-    readonly AudioService audioService;
+    readonly AudioRepository audioRepository;
     readonly TagService tagService;
     public string Name => "Importer";
 
-    public ImporterPage(YoutubeStreamingService youtubeStreamingService,
+    public ImporterPage(YoutubeApiService youtubeApiService,
                         YouTubeService youtubeApi,
-                        AudioService audioService,
+                        AudioRepository audioRepository,
                         TagService tagService)
     {
-        this.youtubeStreamingService = youtubeStreamingService;
+        this.youtubeApiService = youtubeApiService;
         this.youtubeApi = youtubeApi;
-        this.audioService = audioService;
+        this.audioRepository = audioRepository;
         this.tagService = tagService;
     }
 
@@ -50,7 +50,7 @@ public class ImporterPage : IPage
         var willDownload = AnsiConsole.Confirm("Do you want to download the selected playlist?");
         var usePlaylistNameAsTag = AnsiConsole.Confirm("Do you want to use the playlist name as the tag name?", false);
 
-        var playlists = (await youtubeStreamingService.GetMyPlaylists()).ToList();
+        var playlists = (await youtubeApiService.GetMyPlaylists()).ToList();
 
         var selectedPlayLists = AnsiConsole.Prompt(
             new MultiSelectionPrompt<(string, string)>()
@@ -64,7 +64,7 @@ public class ImporterPage : IPage
         foreach (var playList in selectedPlayLists)
         {
             var (name, id) = playList;
-            var audios = (await youtubeStreamingService.GetPlaylistAudios(id)).ToList();
+            var audios = (await youtubeApiService.GetPlaylistAudios(id)).ToList();
 
             var audioListRequest = youtubeApi.Videos.List("snippet,contentDetails");
             audioListRequest.Id = new Repeatable<string>(audios.Select(a => a.Id));
@@ -85,11 +85,11 @@ public class ImporterPage : IPage
         List<AudioInfo> importedAudios = [];
         foreach (var audio in (await audioInfosTask).Items)
         {
-            var existingAudio = await audioService.TryGet(audio.Id);
+            var existingAudio = await audioRepository.TryGet(audio.Id);
             if (existingAudio is not null)
             {
                 existingAudio.Tags.UnionWith(tags);
-                await audioService.Save();
+                await audioRepository.Save();
                 continue;
             }
 
@@ -105,7 +105,7 @@ public class ImporterPage : IPage
             importedAudios.Add(audioInfo);
         }
 
-        await audioService.Add(importedAudios);
+        await audioRepository.Add(importedAudios);
     }
     async Task<List<Tag>> Tag(string name, bool willDownload, string id, bool addAdditionalTags, TagType? tagType, bool usePlaylistNameAsTag)
     {
